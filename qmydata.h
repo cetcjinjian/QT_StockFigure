@@ -18,12 +18,12 @@ typedef struct
 
 typedef struct
 {
-    long Start;
-    long Max;
-    long Min;
-    long  MaxLevel;
-    long  MinLevel;
-    int  PerValue;
+    double deal_Start;
+    double deal_Max;
+    double deal_Min;
+    double vol_Max;
+    double vol_Min;
+    double deal_rate;
 }INFO;
 
 class QMyData
@@ -32,10 +32,8 @@ public:
     QMyData();
     QMyData( char* SecID, char* Date );
     ~QMyData();
-
     bool ReadFSJL();
     void GetFSJLINFO();
-
     FSJL fsjl[241];
     INFO info;
 private:

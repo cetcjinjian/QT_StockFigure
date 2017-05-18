@@ -163,8 +163,7 @@ void StockCanvas::DrawFSJL(char* SecID,char* szDate)
     fsjl.GetFSJLINFO();
 
 
-    pervalue = fsjl.info.PerValue;
-    price_start = fsjl.info.Start;
+    m_fsjl = fsjl;
 
     QPainter painter(this);
     QPen     pen;
@@ -179,7 +178,7 @@ void StockCanvas::DrawFSJL(char* SecID,char* szDate)
     //画左侧初始股票价格 0
 
     QString str;
-    str.sprintf("%.2f",(float)fsjl.info.Start / 1000 );
+    str.sprintf("%.2f",(float)fsjl.info.deal_Start / 1000 );
     painter.drawText(QPoint(0+BORDER_SIZE+COORDINATE_X1-TEXT_LENGTH,
                             0+BORDER_SIZE+COORDINATE_Y1+yInterval*5 +2),str);
 
@@ -189,33 +188,34 @@ void StockCanvas::DrawFSJL(char* SecID,char* szDate)
     pen.setColor(Qt::red);
     painter.setPen(pen);
     float Proportional;
-
     for( int i = 5; i > 0 ; i-- )
     {
-         Proportional = (float)fsjl.info.PerValue / 5 / 100 * i;
-         str.sprintf( "%.2f%%", Proportional );
+         Proportional = (float)fsjl.info.deal_rate / 5  * i * 100;
+         str.sprintf( "%.2f%", Proportional );
          painter.drawText(QPoint(m_windowWidth-BORDER_SIZE-COORDINATE_X2+10,
                                  0+BORDER_SIZE+COORDINATE_Y1+yInterval*(5-i)+2),str);
 
-         str.sprintf("%.2f",(float)fsjl.info.Start / 1000 * (1+Proportional/100));
+         str.sprintf("%.2f",(float)fsjl.info.deal_Start / 1000 * (1+Proportional/100));
          painter.drawText(QPoint(0+BORDER_SIZE+COORDINATE_X1-TEXT_LENGTH,
                                  0+BORDER_SIZE+COORDINATE_Y1+yInterval*(5-i)+2),str);
     }
 
     //画下半部分
-
     pen.setColor(Qt::green);
     painter.setPen(pen);
     for(int i=1 ; i <= 5 ; i++ )
     {
+        Proportional = (float)fsjl.info.deal_rate / 5  * i * 100;
         str.sprintf( "%.2f%%", Proportional );
         painter.drawText(QPoint(m_windowWidth-BORDER_SIZE-COORDINATE_X2+10,
                                 0+BORDER_SIZE+COORDINATE_Y1+yInterval*(5+i)),str);
 
-        str.sprintf("%.2f",(float)fsjl.info.Start / 1000 * (1-Proportional/100));
+        str.sprintf("%.2f",(float)fsjl.info.deal_Start / 1000 * (1-Proportional/100));
         painter.drawText(QPoint(0+BORDER_SIZE+COORDINATE_X1-TEXT_LENGTH,
                                 0+BORDER_SIZE+COORDINATE_Y1+yInterval*(5+i)+2),str);
     }
+
+
 
 
     //画时间轴
@@ -238,6 +238,7 @@ void StockCanvas::DrawFSJL(char* SecID,char* szDate)
     }
 
 
+
     //画分时线
     pen.setColor(QColor("#FFFFFF"));
     pen.setWidth(1);
@@ -258,15 +259,17 @@ void StockCanvas::DrawFSJL(char* SecID,char* szDate)
         }else{
             p2.setX(zeroX + i* xInter);
         }
-        p2.setY( zeroY - float(fsjl.fsjl[i].Deal - fsjl.info.Start) / fsjl.info.Start / fsjl.info.PerValue * 5* yInterval *10000) ;
+        double tempRate = float(fsjl.fsjl[i].Deal - fsjl.info.deal_Start) / fsjl.info.deal_Start;
+        p2.setY( zeroY - tempRate / fsjl.info.deal_rate * 5* yInterval ) ;
         painter.drawLine(p1,p2);
         p1 = p2;
     }
 
+
+
     //画分时线下方的成交量
 
-    float factor = 5 * yInterval / fsjl.info.MaxLevel;
-
+    float factor = 5 * yInterval / fsjl.info.vol_Max;
     for( int i=0; i < 241; i++ )
     {
         p2.setX(zeroX + i* xInter);
@@ -278,9 +281,10 @@ void StockCanvas::DrawFSJL(char* SecID,char* szDate)
 
 
 
+
     //画左侧提示框
 
-
+    DrawTips();
 
 
 
@@ -466,36 +470,17 @@ void StockCanvas::DrawTips()
 {
     //double yGridHight = m_yGridMax - m_yGridMin;  Interval
     //    float YInter = (float)Interval / fsjl.info.PerValue * 100  ;
-
-
    // double y_val =  ( 5* yInterval - ( mousePoint.y() - BORDER_SIZE - COORDINATE_Y1 ) )
-
-
-
-
-
     //double y_val = ( mousePoint.y() - BORDER_SIZE - COORDINATE_Y1 - 5* yInterval ) * ( price_start * (1+ pervalue/10000)) / (5* yInterval) ;
-
-
-
-    //double y_val = price_start / 1000 + ( - mousePoint.y() + BORDER_SIZE + COORDINATE_Y1 + 5* yInterval ) * ( price_start * (1+ pervalue/10000) / 1000 ) /(5* yInterval );
-
-
+    //double y_val = price_start / 1000 + ( - mousePoint.y() + BORDER_SIZE + COORDINATE_Y1 + 5* yInterval ) * ( price_start * (1+ pervalue/10000) /1000 ) /(5* yInterval );
     //double y_val = price_start * (1+ pervalue/10000) / 1000;
-
-
-
-
    // double y_val = ( mousePoint.y() - BORDER_SIZE - COORDINATE_Y1 - 5* yInterval );
 
 
 
-
-
-
-    double y_val = (BORDER_SIZE +  COORDINATE_Y1 + 5* yInterval - mousePoint.y()) * (  (price_start * (1+ pervalue/10000) / 1000  - price_start/1000 ) / (5* yInterval) ) +
-                  price_start/1000;
-
+    double temp = mousePoint.y() - BORDER_SIZE - COORDINATE_Y1 - 5* yInterval;
+    double y_val = - temp * (m_fsjl.info.deal_Start *  m_fsjl.info.deal_rate) / (5* yInterval) + m_fsjl.info.deal_Start;
+    y_val/= 1000;
 
     int iTipsWidth = 60;
     int iTipsHeight = 30;
@@ -512,8 +497,6 @@ void StockCanvas::DrawTips()
     QString text;
     text.sprintf("%.2f",y_val);
     painter.drawText(rect,Qt::AlignCenter,text);
-
-
 
 }
 

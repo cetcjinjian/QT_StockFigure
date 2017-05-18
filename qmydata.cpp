@@ -20,51 +20,35 @@ QMyData::~QMyData()
 
 void QMyData::GetFSJLINFO()
 {
-    int UpRate = 0, DnRate = 0;
-    info.Start = info.Max = info.Min = fsjl[0].Deal;
-    info.MaxLevel = info.MinLevel = 0;
+    double UpRate = 0, DnRate = 0;
+    info.deal_Start = info.deal_Max = info.deal_Min = fsjl[0].Deal;
+    info.vol_Max = info.vol_Min = 0;
 
     for( int i=1; i<241; i++ )
     {
-        if( info.Max < fsjl[i].Deal )
-            info.Max = fsjl[i].Deal;
-        if( info.Min > fsjl[i].Deal )
-            info.Min = fsjl[i].Deal;
+        if( info.deal_Max < fsjl[i].Deal )
+            info.deal_Max = fsjl[i].Deal;
+        if( info.deal_Min > fsjl[i].Deal )
+            info.deal_Min = fsjl[i].Deal;
 
-
-        if(info.MaxLevel < fsjl[i].Vol)
-            info.MaxLevel = fsjl[i].Vol;
-        if(info.MinLevel > fsjl[i].Vol)
-            info.MinLevel = fsjl[i].Vol;
+        if(info.vol_Max < fsjl[i].Vol)
+            info.vol_Max = fsjl[i].Vol;
+        if(info.vol_Min > fsjl[i].Vol)
+            info.vol_Min = fsjl[i].Vol;
     }    
-    qDebug("%d",info.Max);
 
-//    if( info.Max > info.Start )
-//    {
-//        UpRate = (double)( info.Max - info.Start ) / info.Start * 10000;
-//    }
+    qDebug("%d",info.deal_Max);
 
-//    if( info.Min < info.Start )
-//    {
-//        DnRate = (double)( info.Start - info.Min ) / info.Start * 10000;
-//    }
-
-//    if( UpRate > DnRate )
-//        info.PerValue = ( UpRate / 40 / 5 + 1 ) * 40;
-//    else
-//        info.PerValue = ( DnRate / 40 / 5 + 1 ) * 40;
-
-
-    if( info.Max > info.Start)
+    if( info.deal_Max > info.deal_Start)
     {
-        UpRate = (double)( info.Max - info.Start ) / info.Start * 10000; //为了去掉小数，后面会再除去10000
+        UpRate = ( info.deal_Max - info.deal_Start ) / info.deal_Start ;
     }
-    if( info.Min < info.Start)
+    if( info.deal_Min < info.deal_Start)
     {
-        DnRate = (double)( info.Start - info.Min ) / info.Start * 10000;
+        DnRate = ( info.deal_Start - info.deal_Min ) / info.deal_Start ;
     }
 
-    info.PerValue = UpRate > DnRate ? UpRate : DnRate ;
+    info.deal_rate = UpRate > DnRate ? UpRate : DnRate ;
 
 }
 
@@ -72,10 +56,11 @@ void QMyData::GetFSJLINFO()
 
 bool QMyData::ReadFSJL()
 {
-    QString str;
+    QString str("D:\\FSJL.000001K.20100310");
     char    line[1024];
     char    *token;
-    str.sprintf("FSJL.%s.%s",szSecID,szDate);
+    //str.sprintf(+"FSJL.%s.%s",szSecID,szDate);
+
     file = new QFile(str);
     if( !file->open(QFile::ReadOnly) )
         return false;

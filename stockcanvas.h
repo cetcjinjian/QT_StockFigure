@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QMouseEvent>
+#include <qmydata.h>
 
 
 
@@ -67,7 +68,7 @@ private:
     QPoint mousePoint;
     float pervalue;
     float price_start;
-
+    QMyData m_fsjl;
 signals:
 
 public slots:
