@@ -56,7 +56,7 @@ void QMyData::GetFSJLINFO()
 
 bool QMyData::ReadFSJL()
 {
-    QString str("D:\\FSJL.000001K.20100310");
+    QString str("FSJL.000001K.20100310");
     char    line[1024];
     char    *token;
     //str.sprintf(+"FSJL.%s.%s",szSecID,szDate);
